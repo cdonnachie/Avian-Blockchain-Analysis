@@ -1,0 +1,34 @@
+# GraphSense-REST API configuration for Telestai
+# Format based on source code requirements
+
+database:
+  driver: cassandra
+  hosts:
+    - cassandra
+  port: 9042
+  protocol_version: 4
+  keyspace_raw: btc_raw_dev
+  keyspace_transformed: btc_transformed_dev
+  currencies:
+    btc:
+      name: "Bitcoin (Telestai)"
+      symbol: "TEL"
+      decimal_places: 8
+      raw: "btc_raw_dev"
+      transformed: "btc_transformed_dev"
+  nodes:
+    - cassandra
+
+server:
+  host: "0.0.0.0"
+  port: 9000
+
+gs-tagstore:
+  url: "postgresql+asyncpg://postgres:password@tagstore:5432/tagstore"
+  pool_size: 50
+  pool_timeout: 300
+  max_overflow: 10
+  pool_recycle: 3600
+
+logging:
+  level: INFO

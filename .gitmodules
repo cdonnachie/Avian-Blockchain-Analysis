@@ -1,0 +1,15 @@
+[submodule "graphsense-dashboard"]
+	path = graphsense-dashboard
+	url = https://github.com/graphsense/graphsense-dashboard.git
+[submodule "graphsense-lib"]
+	path = graphsense-lib
+	url = https://github.com/graphsense/graphsense-lib.git
+[submodule "graphsense-python"]
+	path = graphsense-python
+	url = https://github.com/graphsense/graphsense-python.git
+[submodule "graphsense-REST"]
+	path = graphsense-REST
+	url = https://github.com/graphsense/graphsense-REST.git
+[submodule "zec-client"]
+	path = zec-client
+	url = https://github.com/graphsense/zec-client.git

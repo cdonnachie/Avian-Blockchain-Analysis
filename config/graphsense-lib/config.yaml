@@ -1,0 +1,55 @@
+# GraphSense configuration for Telestai blockchain
+# Following the standard GraphSense schema format
+
+default_environment: dev
+
+environments:
+  dev:
+    cassandra_nodes: ["cassandra"]
+    username: null
+    password: null
+    readonly_username: null
+    readonly_password: null
+    keyspaces:
+      # Existing BTC configuration (placeholder)
+      btc:
+        raw_keyspace_name: "btc_raw_dev"
+        transformed_keyspace_name: "btc_transformed_dev"
+        schema_type: "utxo"
+        disable_delta_updates: false
+        ingest_config:
+          node_reference: "http://graphsense:secure_password_123@host.docker.internal:8766"
+          secondary_node_references: []
+          raw_keyspace_file_sinks: {}
+        keyspace_setup_config:
+          raw:
+            replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
+            data_configuration: {}
+          transformed:
+            replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
+            data_configuration: {}
+      
+      # Telestai configuration
+      telestai:
+        raw_keyspace_name: "telestai_raw_dev"
+        transformed_keyspace_name: "telestai_transformed_dev"
+        schema_type: "utxo"
+        disable_delta_updates: false
+        ingest_config:
+          node_reference: "http://graphsense:secure_password_123@host.docker.internal:8766"
+          secondary_node_references: []
+          raw_keyspace_file_sinks: {}
+        keyspace_setup_config:
+          raw:
+            replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
+            data_configuration: {}
+          transformed:
+            replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
+            data_configuration: {}
+
+# Global settings
+slack_topics: {}
+cache_directory: "~/.graphsense/cache"
+coingecko_api_key: ""
+coinmarketcap_api_key: ""
+s3_credentials: null
