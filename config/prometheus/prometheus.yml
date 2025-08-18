@@ -1,4 +1,4 @@
-# Prometheus configuration for GraphSense Telestai monitoring
+# Prometheus configuration for GraphSense Avian monitoring
 
 global:
   scrape_interval: 15s
@@ -6,27 +6,27 @@ global:
 
 scrape_configs:
   # GraphSense REST API metrics
-  - job_name: 'graphsense-rest'
+  - job_name: "graphsense-rest"
     static_configs:
-      - targets: ['graphsense-rest:9000']
-    metrics_path: '/metrics'
+      - targets: ["graphsense-rest:9000"]
+    metrics_path: "/metrics"
     scrape_interval: 30s
 
   # Cassandra metrics (if JMX exporter is enabled)
-  - job_name: 'cassandra'
+  - job_name: "cassandra"
     static_configs:
-      - targets: ['cassandra:7070']
+      - targets: ["cassandra:7070"]
     scrape_interval: 30s
 
   # Spark metrics
-  - job_name: 'spark-master'
+  - job_name: "spark-master"
     static_configs:
-      - targets: ['spark-master:8080']
-    metrics_path: '/metrics/prometheus'
+      - targets: ["spark-master:8080"]
+    metrics_path: "/metrics/prometheus"
     scrape_interval: 30s
 
   # System metrics
-  - job_name: 'node-exporter'
+  - job_name: "node-exporter"
     static_configs:
-      - targets: ['localhost:9100']
+      - targets: ["localhost:9100"]
     scrape_interval: 15s

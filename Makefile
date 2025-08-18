@@ -1,4 +1,4 @@
-# GraphSense Telestai - Makefile
+# GraphSense Avian - Makefile
 # Common commands to manage the ecosystem
 
 .PHONY: help build start stop restart logs clean setup init-db ingest status monitor
@@ -11,7 +11,7 @@ SERVICES_APP=graphsense-lib graphsense-rest
 
 # Default target
 help: ## Show this help
-	@echo "GraphSense Telestai - Available commands:"
+	@echo "GraphSense Avian - Available commands:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
@@ -20,7 +20,7 @@ setup: ## Setup project (create .env from example)
 	@echo "🔧 Setting up project..."
 	@if [ ! -f .env ]; then \
 		cp config-vars.env.example .env; \
-		echo "✅ .env file created. Edit it with your Telestai configurations."; \
+		echo "✅ .env file created. Edit it with your Avian configurations."; \
 	else \
 		echo "⚠️  .env file already exists."; \
 	fi
@@ -57,8 +57,8 @@ restart: ## Restart all services
 	$(MAKE) start
 
 # Database Management
-init-db: ## Initialize database schemas for Telestai
-	@echo "🗄️  Initializing database for Telestai..."
+init-db: ## Initialize database schemas for Avian
+	@echo "🗄️  Initializing database for Avian..."
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
 	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml schema create -e dev -c btc
@@ -75,7 +75,7 @@ ingest-batch: ## Batch ingestion of blocks (historical)
 
 ingest-continuous: ## Continuous ingestion (new blocks)
 	@echo "📥 Starting continuous ingestion..."
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node -c telestai --continuous
+	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node -c avian --continuous
 
 transform: ## Execute data transformation
 	@echo "🔄 Executing data transformation..."
@@ -127,11 +127,11 @@ clean: ## Clean unused containers, images and volumes
 	docker volume prune -f
 
 clean-data: ## DANGER: Delete all Cassandra data
-	@echo "⚠️  DANGER: This will delete ALL Telestai data!"
+	@echo "⚠️  DANGER: This will delete ALL Avian data!"
 	@read -p "Are you sure? Type 'DELETE' to confirm: " confirm; \
 	if [ "$$confirm" = "DELETE" ]; then \
-		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS telestai_raw;"; \
-		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS telestai_transformed;"; \
+		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_raw;"; \
+		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_transformed;"; \
 		echo "🗑️  Data deleted."; \
 	else \
 		echo "❌ Operation cancelled."; \
@@ -141,15 +141,15 @@ clean-data: ## DANGER: Delete all Cassandra data
 backup: ## Create Cassandra data backup
 	@echo "💾 Creating Cassandra backup..."
 	mkdir -p ./backups/$(shell date +%Y%m%d_%H%M%S)
-	docker-compose exec cassandra nodetool snapshot telestai_raw
-	docker-compose exec cassandra nodetool snapshot telestai_transformed
+	docker-compose exec cassandra nodetool snapshot avian_raw
+	docker-compose exec cassandra nodetool snapshot avian_transformed
 	@echo "✅ Backup created in Cassandra snapshots."
 
 # Development
 dev-setup: setup build init-db ## Complete development setup
 	@echo "🎯 Development setup completed."
 	@echo "📋 Next steps:"
-	@echo "   1. Edit .env with your Telestai node configuration"
+	@echo "   1. Edit .env with your Avian node configuration"
 	@echo "   2. Run: make start"
 	@echo "   3. Run: make test-connection"
 	@echo "   4. Run: make ingest-batch"

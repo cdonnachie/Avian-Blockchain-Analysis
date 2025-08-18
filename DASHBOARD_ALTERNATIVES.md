@@ -18,18 +18,19 @@ docker-compose up -d cassandra spark-master spark-worker-1 graphsense-lib graphs
 ```
 
 **Peel Chain Analysis via REST API:**
+
 ```bash
 # Get address transactions
-curl "http://localhost:9000/telestai/addresses/YOUR_ADDRESS/txs"
+curl "http://localhost:9000/avian/addresses/YOUR_ADDRESS/txs"
 
 # Get address neighbors (for peel chain tracking)
-curl "http://localhost:9000/telestai/addresses/YOUR_ADDRESS/neighbors"
+curl "http://localhost:9000/avian/addresses/YOUR_ADDRESS/neighbors"
 
 # Get transaction details
-curl "http://localhost:9000/telestai/txs/TX_HASH"
+curl "http://localhost:9000/avian/txs/TX_HASH"
 
 # Get address entity/cluster information
-curl "http://localhost:9000/telestai/addresses/YOUR_ADDRESS/entity"
+curl "http://localhost:9000/avian/addresses/YOUR_ADDRESS/entity"
 ```
 
 ### **2. Python Client for Analysis**
@@ -51,23 +52,23 @@ def analyze_peel_chain(start_address, max_depth=10):
     """
     peel_chain = []
     current_address = start_address
-    
+
     for depth in range(max_depth):
         try:
             # Get outgoing transactions
-            txs = api.get_address_txs("telestai", current_address)
-            
+            txs = api.get_address_txs("avian", current_address)
+
             for tx in txs.address_txs:
                 # Look for 2-output transactions (typical peel chain pattern)
                 if len(tx.outputs) == 2:
                     outputs = sorted(tx.outputs, key=lambda x: x.value, reverse=True)
                     large_output = outputs[0]  # Change
                     small_output = outputs[1]  # Real destination
-                    
+
                     # Calculate ratio (peel chains typically >90% change)
                     total_value = large_output.value + small_output.value
                     change_ratio = large_output.value / total_value
-                    
+
                     if change_ratio > 0.9:  # 90%+ goes to change
                         peel_chain.append({
                             'depth': depth,
@@ -79,22 +80,22 @@ def analyze_peel_chain(start_address, max_depth=10):
                             'change_ratio': change_ratio,
                             'timestamp': tx.timestamp
                         })
-                        
+
                         # Follow the change address for next iteration
                         current_address = large_output.address
                         break
             else:
                 # No peel chain pattern found, stop analysis
                 break
-                
+
         except Exception as e:
             print(f"Error analyzing address {current_address}: {e}")
             break
-    
+
     return peel_chain
 
 # Usage example
-suspect_address = "YOUR_TELESTAI_ADDRESS"
+suspect_address = "YOUR_AVIAN_ADDRESS"
 results = analyze_peel_chain(suspect_address)
 
 print(f"Peel chain analysis for {suspect_address}:")
@@ -115,7 +116,7 @@ docker-compose exec graphsense-lib python -m graphsenselib.cli
 # Example: Get address information
 docker-compose exec graphsense-lib python -c "
 from graphsenselib.db import DbFactory
-with DbFactory().from_config('prod', 'telestai') as db:
+with DbFactory().from_config('prod', 'avian') as db:
     result = db.transformed.get_address_transactions('YOUR_ADDRESS')
     print(result)
 "

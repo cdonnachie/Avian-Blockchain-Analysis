@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# GraphSense Telestai Installation Verification Script
+# GraphSense Avian Installation Verification Script
 # This script verifies that all components are working correctly
 
 set -e
 
-echo "🔍 GraphSense Telestai Installation Verification"
+echo "🔍 GraphSense Avian Installation Verification"
 echo "=============================================="
 
 # Colors for output
@@ -84,7 +84,7 @@ if [ -f ".env" ]; then
     print_status 0 "Found .env file"
     
     # Check required environment variables
-    required_vars=("TELESTAI_RPC_HOST" "TELESTAI_RPC_PORT" "TELESTAI_RPC_USER" "TELESTAI_RPC_PASSWORD")
+    required_vars=("AVIAN_RPC_HOST" "AVIAN_RPC_PORT" "AVIAN_RPC_USER" "AVIAN_RPC_PASSWORD")
     
     for var in "${required_vars[@]}"; do
         if grep -q "^${var}=" .env; then
@@ -121,7 +121,7 @@ echo ""
 echo "5. Checking network connectivity..."
 
 # Test Docker network
-if docker network ls | grep -q "graphsense-telestai-net"; then
+if docker network ls | grep -q "graphsense-avian-net"; then
     print_status 0 "GraphSense network exists"
 else
     print_warning "GraphSense network not found. Services may not be running."
@@ -188,13 +188,13 @@ if docker-compose ps | grep -q "Up.*healthy\|Up.*running"; then
     echo "🎯 Quick commands to get started:"
     echo "   make start        # Start all services"
     echo "   make init-db      # Initialize database (if not done)"
-    echo "   make test-connection  # Test Telestai node connection"
+    echo "   make test-connection  # Test Avian node connection"
     echo "   make logs         # View service logs"
 else
     print_warning "System is not fully operational"
     echo ""
     echo "🚀 To start the system:"
-    echo "   1. Configure .env file with your Telestai node details"
+    echo "   1. Configure .env file with your Avian node details"
     echo "   2. make start-infra    # Start infrastructure"
     echo "   3. make build          # Build images"  
     echo "   4. make start-apps     # Start applications"

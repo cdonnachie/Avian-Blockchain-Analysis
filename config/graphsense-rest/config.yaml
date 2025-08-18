@@ -1,4 +1,4 @@
-# GraphSense-REST API configuration for Telestai
+# GraphSense-REST API configuration for Avian
 # Format based on source code requirements
 
 database:
@@ -11,7 +11,7 @@ database:
   keyspace_transformed: btc_transformed_dev
   currencies:
     btc:
-      name: "Bitcoin (Telestai)"
+      name: "Bitcoin (Avian)"
       symbol: "TEL"
       decimal_places: 8
       raw: "btc_raw_dev"
