@@ -155,7 +155,7 @@ services:
   graphsense-dashboard:
     build:
       context: ./graphsense-dashboard
-      dockerfile: Dockerfile
+      dockerfile: ../docker/graphsense-dashboard-fixed.Dockerfile
     container_name: graphsense-dashboard-avian
     hostname: graphsense-dashboard
     environment:

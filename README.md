@@ -7,6 +7,7 @@ Complete GraphSense ecosystem for analyzing Avian blockchain, specifically desig
 - **Complete UTXO blockchain analysis** - Raw data ingestion and transformed analytics
 - **Peel chain detection** - Track sequential transaction patterns and fund movements
 - **Address clustering** - Identify related addresses and transaction flows
+- **Web Dashboard** - Interactive GraphSense dashboard with tree-sitter fix (✅ **FIXED**)
 - **REST API** - GraphSense REST API for programmatic access (✅ **WORKING**)
 - **TagStore integration** - PostgreSQL-based taxonomy and labeling system
 - **Scalable architecture** - Apache Spark + Cassandra for big data processing
@@ -27,6 +28,12 @@ Complete GraphSense ecosystem for analyzing Avian blockchain, specifically desig
 ```bash
 git clone <your-repo>
 cd Avian-Blockchain-Analysis
+
+# Initialize submodules
+git submodule update --init --recursive
+
+# Apply dashboard tree-sitter fix (automated)
+./setup-dashboard-fix.sh
 ```
 
 ### 2. Configure Environment

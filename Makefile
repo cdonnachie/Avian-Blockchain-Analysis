@@ -8,6 +8,7 @@ COMPOSE_FILE=docker-compose.yml
 SERVICES_CORE=cassandra spark-master spark-worker-1 graphsense-lib graphsense-rest
 SERVICES_INFRA=cassandra spark-master spark-worker-1
 SERVICES_APP=graphsense-lib graphsense-rest
+SERVICES_ALL=$(SERVICES_APP) graphsense-dashboard
 
 # Default target
 help: ## Show this help
@@ -29,6 +30,16 @@ build: ## Build core Docker images (excluding dashboard)
 	@echo "🏗️  Building Docker images for core services..."
 	docker-compose build $(SERVICES_APP)
 
+build-dashboard: ## Build GraphSense Dashboard with tree-sitter fix
+	@echo "🏗️  Building GraphSense Dashboard with tree-sitter fix..."
+	docker-compose build graphsense-dashboard
+
+build-dashboard-ubuntu: ## Build GraphSense Dashboard with Ubuntu base (alternative)
+	@echo "🏗️  Building GraphSense Dashboard with Ubuntu base..."
+	docker-compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
+
+build-all: build build-dashboard ## Build all services including dashboard
+
 # Service Management
 start: ## Start all services
 	@echo "🚀 Starting infrastructure services..."
@@ -45,6 +56,20 @@ start-infra: ## Start only infrastructure services (Cassandra, Spark)
 start-apps: ## Start only application services (GraphSense)
 	@echo "🚀 Starting application services..."
 	docker-compose up -d $(SERVICES_APP)
+
+start-dashboard: ## Start only the dashboard
+	@echo "🚀 Starting GraphSense Dashboard..."
+	docker-compose up -d graphsense-dashboard
+
+start-with-dashboard: ## Start all services including dashboard
+	@echo "🚀 Starting infrastructure services..."
+	docker-compose up -d $(SERVICES_INFRA)
+	@echo "⏳ Waiting for Cassandra to be ready..."
+	@sleep 30
+	@echo "🚀 Starting application services..."
+	docker-compose up -d $(SERVICES_APP)
+	@echo "🎨 Starting dashboard..."
+	docker-compose up -d graphsense-dashboard
 
 stop: ## Stop all services
 	@echo "🛑 Stopping all services..."
@@ -164,8 +189,27 @@ quick-start: ## Quick start (build + start + init-db)
 # Access URLs
 urls: ## Show service access URLs
 	@echo "🌐 Access URLs:"
-	@echo "   Dashboard:  http://localhost:8080"
+	@echo "   Dashboard:  http://localhost:8080 (✅ Fixed - tree-sitter issue resolved)"
 	@echo "   REST API:   http://localhost:9000"
 	@echo "   Spark UI:   http://localhost:8080"
 	@echo "   Prometheus: http://localhost:9090 (if enabled)"
 	@echo "   Grafana:    http://localhost:3000 (if enabled)"
+
+# Dashboard Management
+dashboard-help: ## Show dashboard-specific commands
+	@echo "🎨 Dashboard Commands:"
+	@echo "   make build-dashboard         - Build dashboard with tree-sitter fix"
+	@echo "   make build-dashboard-ubuntu  - Build dashboard with Ubuntu base (alternative)"
+	@echo "   make start-dashboard         - Start only dashboard service"
+	@echo "   make start-with-dashboard    - Start all services including dashboard"
+	@echo "   make logs-dashboard          - View dashboard logs"
+	@echo ""
+	@echo "📋 Setup:"
+	@echo "   ./setup-dashboard-fix.sh     - Apply tree-sitter fix (run once)"
+	@echo ""
+	@echo "📚 Documentation:"
+	@echo "   DASHBOARD_INTEGRATION.md     - Complete integration guide"
+	@echo "   DASHBOARD_ALTERNATIVES.md    - Alternative access methods"
+
+logs-dashboard: ## View logs of graphsense-dashboard
+	docker-compose logs -f graphsense-dashboard

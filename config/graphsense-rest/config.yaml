@@ -12,7 +12,7 @@ database:
   currencies:
     btc:
       name: "Bitcoin (Avian)"
-      symbol: "TEL"
+      symbol: "AVN"
       decimal_places: 8
       raw: "btc_raw_dev"
       transformed: "btc_transformed_dev"
