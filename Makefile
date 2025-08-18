@@ -26,19 +26,23 @@ setup: ## Setup project (create .env from example)
 		echo "⚠️  .env file already exists."; \
 	fi
 
-build: ## Build core Docker images (excluding dashboard)
+build: ## Build core Docker images (including lib and rest)
 	@echo "🏗️  Building Docker images for core services..."
 	docker-compose build $(SERVICES_APP)
 
-build-dashboard: ## Build GraphSense Dashboard with tree-sitter fix
-	@echo "🏗️  Building GraphSense Dashboard with tree-sitter fix..."
+build-dashboard: ## Build GraphSense Dashboard with tree-sitter fix (Alpine)
+	@echo "🏗️  Building GraphSense Dashboard with Alpine-based tree-sitter fix..."
 	docker-compose build graphsense-dashboard
 
 build-dashboard-ubuntu: ## Build GraphSense Dashboard with Ubuntu base (alternative)
 	@echo "🏗️  Building GraphSense Dashboard with Ubuntu base..."
 	docker-compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
 
-build-all: build build-dashboard ## Build all services including dashboard
+build-lib: ## Build GraphSense Lib with custom Dockerfile
+	@echo "🏗️  Building GraphSense Lib..."
+	docker-compose build graphsense-lib
+
+build-all: build build-lib build-dashboard ## Build all services including dashboard
 
 # Service Management
 start: ## Start all services
@@ -116,6 +120,9 @@ logs-lib: ## View logs of graphsense-lib
 logs-rest: ## View logs of graphsense-rest
 	docker-compose logs -f graphsense-rest
 
+logs-dashboard: ## View logs of graphsense-dashboard
+	docker-compose logs -f graphsense-dashboard
+
 logs-cassandra: ## View logs of Cassandra
 	docker-compose logs -f cassandra
 
@@ -133,7 +140,7 @@ health: ## Verificar salud de servicios
 	@echo "REST API:"
 	@curl -s http://localhost:9000/health >/dev/null && echo "✅ REST API OK" || echo "❌ REST API ERROR"
 	@echo "Dashboard:"
-	@curl -s http://localhost:8080 >/dev/null && echo "✅ Dashboard OK" || echo "❌ Dashboard ERROR"
+	@curl -s http://localhost:8081 >/dev/null && echo "✅ Dashboard OK" || echo "❌ Dashboard ERROR"
 
 verify: ## Verify installation and system readiness
 	@echo "🔍 Running system verification..."
@@ -189,7 +196,7 @@ quick-start: ## Quick start (build + start + init-db)
 # Access URLs
 urls: ## Show service access URLs
 	@echo "🌐 Access URLs:"
-	@echo "   Dashboard:  http://localhost:8080 (✅ Fixed - tree-sitter issue resolved)"
+	@echo "   Dashboard:  http://localhost:8081"
 	@echo "   REST API:   http://localhost:9000"
 	@echo "   Spark UI:   http://localhost:8080"
 	@echo "   Prometheus: http://localhost:9090 (if enabled)"
@@ -198,10 +205,13 @@ urls: ## Show service access URLs
 # Dashboard Management
 dashboard-help: ## Show dashboard-specific commands
 	@echo "🎨 Dashboard Commands:"
-	@echo "   make build-dashboard         - Build dashboard with tree-sitter fix"
+	@echo "   make build-lib               - Build GraphSense Lib with custom Dockerfile"
+	@echo "   make build-dashboard         - Build dashboard with Alpine-based fix"
 	@echo "   make build-dashboard-ubuntu  - Build dashboard with Ubuntu base (alternative)"
+	@echo "   make build-all               - Build all services (lib + rest + dashboard)"
 	@echo "   make start-dashboard         - Start only dashboard service"
 	@echo "   make start-with-dashboard    - Start all services including dashboard"
+	@echo "   make logs-lib                - View graphsense-lib logs"
 	@echo "   make logs-dashboard          - View dashboard logs"
 	@echo ""
 	@echo "📋 Setup:"

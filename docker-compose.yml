@@ -86,7 +86,7 @@ services:
   graphsense-lib:
     build:
       context: ./graphsense-lib
-      dockerfile: Dockerfile
+      dockerfile: ../docker/graphsense-lib.Dockerfile
     container_name: graphsense-lib-avian
     hostname: graphsense-lib
     environment:
@@ -155,13 +155,13 @@ services:
   graphsense-dashboard:
     build:
       context: ./graphsense-dashboard
-      dockerfile: ../docker/graphsense-dashboard-fixed.Dockerfile
+      dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile
     container_name: graphsense-dashboard-avian
     hostname: graphsense-dashboard
     environment:
       - REST_URL=http://graphsense-rest:9000
     ports:
-      - "8080:8000"
+      - "8081:8000"
     depends_on:
       - graphsense-rest
     networks:

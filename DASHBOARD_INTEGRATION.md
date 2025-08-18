@@ -9,40 +9,52 @@ This integration moves the tree-sitter compilation fix from the `graphsense-dash
 ```
 Avian-Blockchain-Analysis/
 ├── docker/
-│   ├── graphsense-dashboard-fixed.Dockerfile    # Main fix (Alpine-based)
-│   └── graphsense-dashboard-ubuntu.Dockerfile   # Alternative (Ubuntu-based)
+│   ├── graphsense-dashboard-alpine.Dockerfile   # Alpine-based fix (primary)
+│   ├── graphsense-dashboard-ubuntu.Dockerfile   # Ubuntu-based alternative
+│   └── graphsense-lib.Dockerfile                # Custom GraphSense Lib build
 ├── setup-dashboard-fix.sh                       # Automated setup script
-├── docker-compose.yml                           # Updated to use fixed Dockerfile
-└── Makefile                                     # Enhanced with dashboard commands
+├── docker-compose.yml                           # Updated to use custom Dockerfiles
+└── Makefile                                     # Enhanced with build commands
 ```
 
 ## 🔧 Integration Details
 
 ### **1. Fixed Dockerfiles Location**
-- **Primary**: `docker/graphsense-dashboard-fixed.Dockerfile`
-- **Alternative**: `docker/graphsense-dashboard-ubuntu.Dockerfile`
+
+- **Primary**: `docker/graphsense-dashboard-alpine.Dockerfile` (Alpine-based with comprehensive build deps)
+- **Alternative**: `docker/graphsense-dashboard-ubuntu.Dockerfile` (Ubuntu-based for better compatibility)
+- **Custom Lib**: `docker/graphsense-lib.Dockerfile` (Custom GraphSense Lib build)
 
 ### **2. Docker Compose Configuration**
-The `docker-compose.yml` now references the fixed Dockerfile:
+
+The `docker-compose.yml` now references the custom Dockerfiles:
 
 ```yaml
+graphsense-lib:
+  build:
+    context: ./graphsense-lib
+    dockerfile: ../docker/graphsense-lib.Dockerfile
+
 graphsense-dashboard:
   build:
     context: ./graphsense-dashboard
-    dockerfile: ../docker/graphsense-dashboard-fixed.Dockerfile
+    dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile
 ```
 
 ### **3. Enhanced Makefile Commands**
 
 #### **Build Commands**
+
 ```bash
-make build                    # Core services only
-make build-dashboard          # Dashboard with tree-sitter fix
+make build                    # Core services (lib + rest)
+make build-lib                # GraphSense Lib with custom Dockerfile
+make build-dashboard          # Dashboard with Alpine-based fix
 make build-dashboard-ubuntu   # Dashboard with Ubuntu base (alternative)
-make build-all               # All services including dashboard
+make build-all               # All services (lib + rest + dashboard)
 ```
 
 #### **Service Management**
+
 ```bash
 make start                   # Core services only
 make start-dashboard         # Dashboard only
@@ -52,6 +64,7 @@ make start-with-dashboard    # All services including dashboard
 ## 🚀 Quick Start
 
 ### **Option 1: Automated Setup**
+
 ```bash
 # Run the automated setup script
 ./setup-dashboard-fix.sh
@@ -63,9 +76,157 @@ make init-db
 ```
 
 ### **Option 2: Manual Setup**
+
+```bash
+# 1. Build all services
+make build-all
+
+# 2. Start with dashboard
+make start-with-dashboard
+
+# 3. Initialize database
+make init-db
+```
+
+## 🔍 Verification
+
+Once setup is complete, verify the dashboard is working:
+
+```bash
+# Check service status
+make status
+
+# Verify dashboard accessibility
+curl http://localhost:8081
+
+# Check REST API
+curl http://localhost:9000/health
+```
+
+## 🛠️ Troubleshooting
+
+### **Dashboard Build Fails**
+
+Try the Ubuntu-based alternative:
+
+```bash
+# Use Ubuntu base instead of Alpine
+make build-dashboard-ubuntu
+```
+
+### **Tree-Sitter Still Failing**
+
+1. Check Docker resources (increase memory/CPU)
+2. Clear Docker cache: `docker system prune -f`
+3. Rebuild from scratch: `make clean && make build-all`
+
+### **Submodule Issues**
+
+If the dashboard submodule needs updates:
+
+```bash
+git submodule update --remote graphsense-dashboard
+./setup-dashboard-fix.sh  # Re-apply the fix
+```
+
+## 📋 Maintenance Workflow
+
+### **When Updating Submodules**
+
+```bash
+# 1. Update submodules
+git submodule update --remote
+
+# 2. Re-apply dashboard fix
+./setup-dashboard-fix.sh
+
+# 3. Rebuild if needed
+make build-dashboard
+```
+
+### **Adding New Dockerfile Fixes**
+
+1. Create new Dockerfile in `docker/` directory
+2. Update `docker-compose.yml` dockerfile path
+3. Add corresponding Makefile target
+4. Test the new configuration
+
+## 🔄 Integration Benefits
+
+1. **Version Control**: Fixed Dockerfiles are tracked in main repo
+2. **Automation**: Setup script applies fixes automatically
+3. **Flexibility**: Multiple Dockerfile options available (Alpine/Ubuntu)
+4. **Consistency**: Same fix applied across all environments
+5. **Maintenance**: Easy to update and maintain fixes
+
+## 🎯 Next Steps
+
+The dashboard should now build successfully without tree-sitter compilation errors. The integration ensures:
+
+- ✅ Tree-sitter native compilation works
+- ✅ Dashboard builds in Docker environment
+- ✅ Fix is preserved across submodule updates
+- ✅ Multiple fallback options available
+- ✅ Automated setup and maintenance
+
+Access your working dashboard at: **http://localhost:8081** 🎉
+
+## 🔧 Integration Details
+
+### **1. Dockerfiles Location**
+
+- **Primary**: `docker/graphsense-dashboard-alpine.Dockerfile`
+- **Alternative**: `docker/graphsense-dashboard-ubuntu.Dockerfile`
+
+### **2. Docker Compose Configuration**
+
+The `docker-compose.yml` now references the fixed Dockerfile:
+
+```yaml
+graphsense-dashboard:
+  build:
+    context: ./graphsense-dashboard
+    dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile
+```
+
+### **3. Enhanced Makefile Commands**
+
+#### **Build Commands**
+
+```bash
+make build                    # Core services only
+make build-dashboard          # Dashboard with tree-sitter fix
+make build-dashboard-ubuntu   # Dashboard with Ubuntu base (alternative)
+make build-all               # All services including dashboard
+```
+
+#### **Service Management**
+
+```bash
+make start                   # Core services only
+make start-dashboard         # Dashboard only
+make start-with-dashboard    # All services including dashboard
+```
+
+## 🚀 Quick Start
+
+### **Option 1: Automated Setup**
+
+```bash
+# Run the automated setup script
+./setup-dashboard-fix.sh
+
+# Build and start all services
+make build-all
+make start-with-dashboard
+make init-db
+```
+
+### **Option 2: Manual Setup**
+
 ```bash
 # 1. Copy fixed Dockerfiles (if not already done)
-cp graphsense-dashboard/Dockerfile.fixed docker/graphsense-dashboard-fixed.Dockerfile
+cp graphsense-dashboard/Dockerfile.fixed docker/graphsense-dashboard-alpine.Dockerfile
 
 # 2. Build all services
 make build-all
@@ -86,7 +247,7 @@ Once setup is complete, verify the dashboard is working:
 make status
 
 # Verify dashboard accessibility
-curl http://localhost:8080
+curl http://localhost:8081
 
 # Check REST API
 curl http://localhost:9000/health
@@ -95,19 +256,24 @@ curl http://localhost:9000/health
 ## 🛠️ Troubleshooting
 
 ### **Dashboard Build Fails**
+
 Try the Ubuntu-based alternative:
+
 ```bash
 # Use Ubuntu base instead of Alpine
 docker-compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
 ```
 
 ### **Tree-Sitter Still Failing**
+
 1. Check Docker resources (increase memory/CPU)
 2. Clear Docker cache: `docker system prune -f`
 3. Rebuild from scratch: `make clean && make build-all`
 
 ### **Submodule Issues**
+
 If the dashboard submodule needs updates:
+
 ```bash
 git submodule update --remote graphsense-dashboard
 ./setup-dashboard-fix.sh  # Re-apply the fix
@@ -116,6 +282,7 @@ git submodule update --remote graphsense-dashboard
 ## 📋 Maintenance Workflow
 
 ### **When Updating Submodules**
+
 ```bash
 # 1. Update submodules
 git submodule update --remote
@@ -128,6 +295,7 @@ make build-dashboard
 ```
 
 ### **Adding New Dockerfile Fixes**
+
 1. Create new Dockerfile in `docker/` directory
 2. Update `docker-compose.yml` dockerfile path
 3. Add corresponding Makefile target
@@ -151,4 +319,4 @@ The dashboard should now build successfully without tree-sitter compilation erro
 - ✅ Multiple fallback options available
 - ✅ Automated setup and maintenance
 
-Access your working dashboard at: **http://localhost:8080** 🎉
+Access your working dashboard at: **http://localhost:8081** 🎉

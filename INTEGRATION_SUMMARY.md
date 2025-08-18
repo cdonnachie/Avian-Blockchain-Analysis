@@ -5,20 +5,25 @@
 The `tree-sitter` compilation issue has been **fully integrated** into the main Avian-Blockchain-Analysis project workflow. The fix is now:
 
 ### **📁 Properly Organized**
-- `docker/graphsense-dashboard-fixed.Dockerfile` - Main fix (Alpine-based, comprehensive build deps)
+
+- `docker/graphsense-dashboard-alpine.Dockerfile` - Main fix (Alpine-based, comprehensive build deps)
 - `docker/graphsense-dashboard-ubuntu.Dockerfile` - Alternative fix (Ubuntu-based)
+- `docker/graphsense-lib.Dockerfile` - Custom GraphSense Lib build
 - Fixed Dockerfiles are in main project, not submodule
 
-### **🔧 Automatically Applied**  
+### **🔧 Automatically Applied**
+
 - `docker-compose.yml` uses the fixed Dockerfile by default
 - `./setup-dashboard-fix.sh` script automates the setup process
 - No manual file copying required
 
 ### **📋 Enhanced Makefile**
+
 New commands available:
+
 ```bash
 make build-dashboard          # Build dashboard with tree-sitter fix
-make build-dashboard-ubuntu   # Build with Ubuntu alternative  
+make build-dashboard-ubuntu   # Build with Ubuntu alternative
 make build-all               # Build everything including dashboard
 make start-dashboard         # Start only dashboard
 make start-with-dashboard    # Start all services with dashboard
@@ -27,6 +32,7 @@ make logs-dashboard          # View dashboard logs
 ```
 
 ### **📚 Comprehensive Documentation**
+
 - `DASHBOARD_INTEGRATION.md` - Complete integration guide
 - Updated `DASHBOARD_ALTERNATIVES.md` - Shows fix is integrated
 - Updated `README.md` - Reflects dashboard is now working
@@ -35,6 +41,7 @@ make logs-dashboard          # View dashboard logs
 ## 🚀 How to Use
 
 ### **For New Setups**
+
 ```bash
 git clone <repo>
 cd Avian-Blockchain-Analysis
@@ -45,6 +52,7 @@ make start-with-dashboard
 ```
 
 ### **For Existing Setups**
+
 ```bash
 ./setup-dashboard-fix.sh     # Apply integration (run once)
 make build-dashboard         # Rebuild dashboard with fix
@@ -64,8 +72,9 @@ make start-dashboard         # Start dashboard
 ## 🌐 Access Points
 
 Once running:
-- **Dashboard**: http://localhost:8080 ✅ **WORKING**
-- **REST API**: http://localhost:9000 ✅ **WORKING**  
+
+- **Dashboard**: http://localhost:8081 ✅ **WORKING**
+- **REST API**: http://localhost:9000 ✅ **WORKING**
 - **All GraphSense functionality** available through both interfaces
 
 The GraphSense dashboard integration is now **complete and production-ready**! 🎯

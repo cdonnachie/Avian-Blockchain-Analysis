@@ -2,7 +2,7 @@
 
 ## 🚨 Known Issue: Dashboard Build Problem
 
-The graphsense-dashboard had a known build issue related to `tree-sitter` native compilation during Docker build. **This has now been FIXED** - see `graphsense-dashboard/BUILD_FIX_README.md` for the complete solution. All GraphSense functionality is also available through alternative methods below.
+The graphsense-dashboard had a known build issue related to `tree-sitter` native compilation during Docker build. **This has now been FIXED** - see `DASHBOARD_INTEGRATION.md` for the complete solution. All GraphSense functionality is also available through alternative methods below.
 
 ## ✅ Available Alternatives
 
@@ -185,6 +185,7 @@ python address_analysis.py
 **UPDATE: The tree-sitter build issue has been INTEGRATED into the main project!**
 
 **Quick Start with Fixed Dashboard**:
+
 ```bash
 # Apply the fix (automated)
 ./setup-dashboard-fix.sh
@@ -197,18 +198,21 @@ make start-with-dashboard
 **Integration Details**: See `DASHBOARD_INTEGRATION.md` for complete documentation.
 
 **Key Benefits**:
+
 - ✅ Fix is automatically applied from main project
-- ✅ Version controlled in main repository  
+- ✅ Version controlled in main repository
 - ✅ Survives submodule updates
 - ✅ Multiple Dockerfile options available
 - ✅ Integrated into Makefile workflow
 
 **Manual Fix** (if needed):
 The original fix files are available in `docker/` directory:
-- `docker/graphsense-dashboard-fixed.Dockerfile` - Enhanced Alpine build
+
+- `docker/graphsense-dashboard-alpine.Dockerfile` - Enhanced Alpine build
 - `docker/graphsense-dashboard-ubuntu.Dockerfile` - Ubuntu-based alternative
 
 **Legacy troubleshooting approaches** (for reference only):
+
 1. **Try building outside Docker** (native environment)
 2. **Use different Node.js version** (18.x or 22.x)
 3. **Pre-compile native modules** in separate container

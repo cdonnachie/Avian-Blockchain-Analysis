@@ -20,29 +20,49 @@ if [ ! -d "docker" ]; then
 fi
 
 # Copy fixed Dockerfiles to main project
-echo "📋 Copying fixed Dockerfiles..."
+echo "📋 Copying custom Dockerfiles..."
 
 if [ -f "graphsense-dashboard/Dockerfile.fixed" ]; then
-    cp "graphsense-dashboard/Dockerfile.fixed" "docker/graphsense-dashboard-fixed.Dockerfile"
-    echo "✅ Fixed Dockerfile copied"
+    cp "graphsense-dashboard/Dockerfile.fixed" "docker/graphsense-dashboard-alpine.Dockerfile"
+    echo "✅ Dashboard Alpine Dockerfile copied"
+elif [ -f "docker/graphsense-dashboard-alpine.Dockerfile" ]; then
+    echo "✅ Dashboard Alpine Dockerfile already exists"
 else
     echo "⚠️  Warning: graphsense-dashboard/Dockerfile.fixed not found"
 fi
 
 if [ -f "graphsense-dashboard/Dockerfile.ubuntu" ]; then
     cp "graphsense-dashboard/Dockerfile.ubuntu" "docker/graphsense-dashboard-ubuntu.Dockerfile"
-    echo "✅ Ubuntu Dockerfile copied"
+    echo "✅ Dashboard Ubuntu Dockerfile copied"
+elif [ -f "docker/graphsense-dashboard-ubuntu.Dockerfile" ]; then
+    echo "✅ Dashboard Ubuntu Dockerfile already exists"
+fi
+
+# Check if custom graphsense-lib Dockerfile exists
+if [ -f "docker/graphsense-lib.Dockerfile" ]; then
+    echo "✅ Custom GraphSense Lib Dockerfile found"
+else
+    echo "⚠️  Warning: docker/graphsense-lib.Dockerfile not found"
 fi
 
 # Update docker-compose.yml if needed
 echo "🔧 Checking docker-compose.yml configuration..."
 
 if grep -q "dockerfile: Dockerfile" docker-compose.yml; then
-    echo "🔄 Updating docker-compose.yml to use fixed Dockerfile..."
-    sed -i 's|dockerfile: Dockerfile|dockerfile: ../docker/graphsense-dashboard-fixed.Dockerfile|g' docker-compose.yml
-    echo "✅ docker-compose.yml updated"
+    echo "🔄 Updating docker-compose.yml to use custom Dockerfiles..."
+    sed -i 's|dockerfile: Dockerfile|dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile|g' docker-compose.yml
+    echo "✅ Dashboard docker-compose.yml updated"
 else
-    echo "✅ docker-compose.yml already configured"
+    echo "✅ Dashboard docker-compose.yml already configured"
+fi
+
+# Check for graphsense-lib Dockerfile configuration
+if grep -q "context: ./graphsense-lib" docker-compose.yml && grep -q "dockerfile: Dockerfile" docker-compose.yml; then
+    echo "🔄 Updating graphsense-lib to use custom Dockerfile..."
+    sed -i '/context: \.\/graphsense-lib/,/dockerfile: Dockerfile/s|dockerfile: Dockerfile|dockerfile: ../docker/graphsense-lib.Dockerfile|' docker-compose.yml
+    echo "✅ GraphSense Lib docker-compose.yml updated"
+else
+    echo "✅ GraphSense Lib docker-compose.yml already configured"
 fi
 
 # Create .env if it doesn't exist
@@ -59,15 +79,16 @@ echo "🎉 Setup completed successfully!"
 echo ""
 echo "📋 Next steps:"
 echo "   1. Edit .env with your Avian node configuration"
-echo "   2. Run: make build-all           # Build all services including dashboard"
+echo "   2. Run: make build-all           # Build all services (lib + rest + dashboard)"
 echo "   3. Run: make start-with-dashboard # Start all services with dashboard"
 echo "   4. Run: make init-db             # Initialize database"
 echo ""
 echo "🌐 Once running, access:"
-echo "   Dashboard:  http://localhost:8080"
+echo "   Dashboard:  http://localhost:8081"
 echo "   REST API:   http://localhost:9000"
 echo ""
 echo "ℹ️  Available commands:"
-echo "   make build-dashboard     # Build only dashboard with fix"
+echo "   make build-lib           # Build GraphSense Lib with custom Dockerfile"
+echo "   make build-dashboard     # Build dashboard with Alpine-based fix"
 echo "   make start-dashboard     # Start only dashboard"
 echo "   make help               # Show all available commands"
