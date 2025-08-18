@@ -220,6 +220,3 @@ dashboard-help: ## Show dashboard-specific commands
 	@echo "📚 Documentation:"
 	@echo "   DASHBOARD_INTEGRATION.md     - Complete integration guide"
 	@echo "   DASHBOARD_ALTERNATIVES.md    - Alternative access methods"
-
-logs-dashboard: ## View logs of graphsense-dashboard
-	docker compose logs -f graphsense-dashboard
