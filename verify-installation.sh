@@ -46,11 +46,11 @@ else
 fi
 
 # Check Docker Compose
-if command_exists docker-compose; then
-    COMPOSE_VERSION=$(docker-compose --version | cut -d' ' -f3 | sed 's/,//')
+if command_exists docker && docker compose version >/dev/null 2>&1; then
+    COMPOSE_VERSION=$(docker compose version --short 2>/dev/null || docker compose version | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     print_status 0 "Docker Compose installed (${COMPOSE_VERSION})"
 else
-    print_status 1 "Docker Compose not found. Please install Docker Compose."
+    print_status 1 "Docker Compose not found. Please install Docker Compose v2."
     exit 1
 fi
 
@@ -106,7 +106,7 @@ echo ""
 echo "4. Checking Docker services..."
 
 # Check if any services are running
-RUNNING_SERVICES=$(docker-compose ps --services --filter "status=running" 2>/dev/null || echo "")
+RUNNING_SERVICES=$(docker compose ps --services --filter "status=running" 2>/dev/null || echo "")
 
 if [ -n "$RUNNING_SERVICES" ]; then
     echo "Running services:"
@@ -144,18 +144,18 @@ echo ""
 echo "7. Testing basic functionality..."
 
 # Test if Cassandra is accessible (if running)
-if docker-compose ps cassandra | grep -q "Up"; then
-    if docker-compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" >/dev/null 2>&1; then
+if docker compose ps cassandra | grep -q "Up"; then
+    if docker compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" >/dev/null 2>&1; then
         print_status 0 "Cassandra is accessible"
         
         # Check if GraphSense keyspaces exist
-        if docker-compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" | grep -q "btc_raw_dev"; then
+        if docker compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" | grep -q "btc_raw_dev"; then
             print_status 0 "Raw keyspace exists"
         else
             print_warning "Raw keyspace not found. Run 'make init-db' to create."
         fi
         
-        if docker-compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" | grep -q "btc_transformed_dev"; then
+        if docker compose exec -T cassandra cqlsh -e "DESCRIBE KEYSPACES;" | grep -q "btc_transformed_dev"; then
             print_status 0 "Transformed keyspace exists"
         else
             print_warning "Transformed keyspace not found. Run 'make init-db' to create."
@@ -168,7 +168,7 @@ else
 fi
 
 # Test if GraphSense REST API is accessible (if running)
-if docker-compose ps graphsense-rest | grep -q "Up"; then
+if docker compose ps graphsense-rest | grep -q "Up"; then
     if curl -s http://localhost:9000 >/dev/null 2>&1; then
         print_status 0 "GraphSense REST API is accessible"
     else
@@ -182,7 +182,7 @@ echo ""
 echo "8. System readiness summary..."
 
 # Overall system status
-if docker-compose ps | grep -q "Up.*healthy\|Up.*running"; then
+if docker compose ps | grep -q "Up.*healthy\|Up.*running"; then
     print_status 0 "System has running services"
     echo ""
     echo "🎯 Quick commands to get started:"

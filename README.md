@@ -258,14 +258,14 @@ curl http://localhost:9000/health
 **Service not starting:**
 
 ```bash
-docker-compose logs service-name
+docker compose logs service-name
 ```
 
 **Database connection issues:**
 
 ```bash
 make test-connection
-docker-compose exec cassandra cqlsh -e "DESCRIBE KEYSPACES;"
+docker compose exec cassandra cqlsh -e "DESCRIBE KEYSPACES;"
 ```
 
 **Avian node connection:**
@@ -287,7 +287,7 @@ Optional monitoring with Prometheus + Grafana:
 
 ```bash
 # Start with monitoring
-docker-compose --profile monitoring up -d
+docker compose --profile monitoring up -d
 
 # Access Grafana at http://localhost:3000
 # Default: admin/admin
@@ -367,7 +367,7 @@ For issues specific to this Avian implementation, check:
 
 1. Service logs: `make logs`
 2. Connection tests: `make test-connection`
-3. Database status: `docker-compose exec cassandra cqlsh -e "DESCRIBE KEYSPACES;"`
+3. Database status: `docker compose exec cassandra cqlsh -e "DESCRIBE KEYSPACES;"`
 
 ---
 

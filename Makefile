@@ -28,56 +28,56 @@ setup: ## Setup project (create .env from example)
 
 build: ## Build core Docker images (including lib and rest)
 	@echo "🏗️  Building Docker images for core services..."
-	docker-compose build $(SERVICES_APP)
+	docker compose build $(SERVICES_APP)
 
 build-dashboard: ## Build GraphSense Dashboard with tree-sitter fix (Alpine)
 	@echo "🏗️  Building GraphSense Dashboard with Alpine-based tree-sitter fix..."
-	docker-compose build graphsense-dashboard
+	docker compose build graphsense-dashboard
 
 build-dashboard-ubuntu: ## Build GraphSense Dashboard with Ubuntu base (alternative)
 	@echo "🏗️  Building GraphSense Dashboard with Ubuntu base..."
-	docker-compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
+	docker compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
 
 build-lib: ## Build GraphSense Lib with custom Dockerfile
 	@echo "🏗️  Building GraphSense Lib..."
-	docker-compose build graphsense-lib
+	docker compose build graphsense-lib
 
 build-all: build build-lib build-dashboard ## Build all services including dashboard
 
 # Service Management
 start: ## Start all services
 	@echo "🚀 Starting infrastructure services..."
-	docker-compose up -d $(SERVICES_INFRA)
+	docker compose up -d $(SERVICES_INFRA)
 	@echo "⏳ Waiting for Cassandra to be ready..."
 	@sleep 30
 	@echo "🚀 Starting application services..."
-	docker-compose up -d $(SERVICES_APP)
+	docker compose up -d $(SERVICES_APP)
 
 start-infra: ## Start only infrastructure services (Cassandra, Spark)
 	@echo "🚀 Starting infrastructure services..."
-	docker-compose up -d $(SERVICES_INFRA)
+	docker compose up -d $(SERVICES_INFRA)
 
 start-apps: ## Start only application services (GraphSense)
 	@echo "🚀 Starting application services..."
-	docker-compose up -d $(SERVICES_APP)
+	docker compose up -d $(SERVICES_APP)
 
 start-dashboard: ## Start only the dashboard
 	@echo "🚀 Starting GraphSense Dashboard..."
-	docker-compose up -d graphsense-dashboard
+	docker compose up -d graphsense-dashboard
 
 start-with-dashboard: ## Start all services including dashboard
 	@echo "🚀 Starting infrastructure services..."
-	docker-compose up -d $(SERVICES_INFRA)
+	docker compose up -d $(SERVICES_INFRA)
 	@echo "⏳ Waiting for Cassandra to be ready..."
 	@sleep 30
 	@echo "🚀 Starting application services..."
-	docker-compose up -d $(SERVICES_APP)
+	docker compose up -d $(SERVICES_APP)
 	@echo "🎨 Starting dashboard..."
-	docker-compose up -d graphsense-dashboard
+	docker compose up -d graphsense-dashboard
 
 stop: ## Stop all services
 	@echo "🛑 Stopping all services..."
-	docker-compose down
+	docker compose down
 
 restart: ## Restart all services
 	@echo "🔄 Restarting services..."
@@ -90,45 +90,45 @@ init-db: ## Initialize database schemas for Avian
 	@echo "🗄️  Initializing database for Avian..."
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml schema create -e dev -c btc
+	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml schema create -e dev -c btc
 	@echo "✅ Database schemas created."
 
 test-connection: ## Test GraphSense system status
 	@echo "🔍 Testing GraphSense system status..."
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml monitoring get-summary -e dev -c btc
+	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml monitoring get-summary -e dev -c btc
 
 # Data Ingestion
 ingest-batch: ## Batch ingestion of blocks (historical)
 	@echo "📥 Starting batch ingestion..."
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node --env dev --currency btc --batch-size 10 --mode utxo_with_tx_graph --create-schema
+	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node --env dev --currency btc --batch-size 10 --mode utxo_with_tx_graph --create-schema
 
 ingest-continuous: ## Continuous ingestion (new blocks)
 	@echo "📥 Starting continuous ingestion..."
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node -c avian --continuous
+	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml ingest from-node -c avian --continuous
 
 transform: ## Execute data transformation
 	@echo "🔄 Executing data transformation..."
-	docker-compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml delta-update update --env dev --currency btc
+	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml delta-update update --env dev --currency btc
 
 # Monitoring and Logs
 logs: ## View logs of all services
-	docker-compose logs -f
+	docker compose logs -f
 
 logs-lib: ## View logs of graphsense-lib
-	docker-compose logs -f graphsense-lib
+	docker compose logs -f graphsense-lib
 
 logs-rest: ## View logs of graphsense-rest
-	docker-compose logs -f graphsense-rest
+	docker compose logs -f graphsense-rest
 
 logs-dashboard: ## View logs of graphsense-dashboard
-	docker-compose logs -f graphsense-dashboard
+	docker compose logs -f graphsense-dashboard
 
 logs-cassandra: ## View logs of Cassandra
-	docker-compose logs -f cassandra
+	docker compose logs -f cassandra
 
 status: ## Show status of all services
 	@echo "📊 Service status:"
-	docker-compose ps
+	docker compose ps
 	@echo ""
 	@echo "📈 Resource usage:"
 	docker stats --no-stream
@@ -136,7 +136,7 @@ status: ## Show status of all services
 health: ## Verificar salud de servicios
 	@echo "🏥 Verificando salud de servicios..."
 	@echo "Cassandra:"
-	@docker-compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" 2>/dev/null && echo "✅ Cassandra OK" || echo "❌ Cassandra ERROR"
+	@docker compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" 2>/dev/null && echo "✅ Cassandra OK" || echo "❌ Cassandra ERROR"
 	@echo "REST API:"
 	@curl -s http://localhost:9000/health >/dev/null && echo "✅ REST API OK" || echo "❌ REST API ERROR"
 	@echo "Dashboard:"
@@ -149,12 +149,12 @@ verify: ## Verify installation and system readiness
 # Monitoring
 monitor: ## Start services with monitoring (Prometheus + Grafana)
 	@echo "📊 Starting services with monitoring..."
-	COMPOSE_PROFILES=default,monitoring docker-compose up -d
+	COMPOSE_PROFILES=default,monitoring docker compose up -d
 
 # Maintenance
 clean: ## Clean unused containers, images and volumes
 	@echo "🧹 Cleaning Docker resources..."
-	docker-compose down -v
+	docker compose down -v
 	docker system prune -f
 	docker volume prune -f
 
@@ -162,8 +162,8 @@ clean-data: ## DANGER: Delete all Cassandra data
 	@echo "⚠️  DANGER: This will delete ALL Avian data!"
 	@read -p "Are you sure? Type 'DELETE' to confirm: " confirm; \
 	if [ "$$confirm" = "DELETE" ]; then \
-		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_raw;"; \
-		docker-compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_transformed;"; \
+		docker compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_raw;"; \
+		docker compose exec cassandra cqlsh -e "DROP KEYSPACE IF EXISTS avian_transformed;"; \
 		echo "🗑️  Data deleted."; \
 	else \
 		echo "❌ Operation cancelled."; \
@@ -173,8 +173,8 @@ clean-data: ## DANGER: Delete all Cassandra data
 backup: ## Create Cassandra data backup
 	@echo "💾 Creating Cassandra backup..."
 	mkdir -p ./backups/$(shell date +%Y%m%d_%H%M%S)
-	docker-compose exec cassandra nodetool snapshot avian_raw
-	docker-compose exec cassandra nodetool snapshot avian_transformed
+	docker compose exec cassandra nodetool snapshot avian_raw
+	docker compose exec cassandra nodetool snapshot avian_transformed
 	@echo "✅ Backup created in Cassandra snapshots."
 
 # Development
@@ -222,4 +222,4 @@ dashboard-help: ## Show dashboard-specific commands
 	@echo "   DASHBOARD_ALTERNATIVES.md    - Alternative access methods"
 
 logs-dashboard: ## View logs of graphsense-dashboard
-	docker-compose logs -f graphsense-dashboard
+	docker compose logs -f graphsense-dashboard

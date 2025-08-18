@@ -12,7 +12,7 @@ Access all GraphSense functionality through the REST API:
 
 ```bash
 # Start core services (without dashboard)
-docker-compose up -d cassandra spark-master spark-worker-1 graphsense-lib graphsense-rest
+docker compose up -d cassandra spark-master spark-worker-1 graphsense-lib graphsense-rest
 
 # API will be available at: http://localhost:9000
 ```
@@ -111,10 +111,10 @@ Direct CLI access for data analysis:
 
 ```bash
 # Execute commands inside graphsense-lib container
-docker-compose exec graphsense-lib python -m graphsenselib.cli
+docker compose exec graphsense-lib python -m graphsenselib.cli
 
 # Example: Get address information
-docker-compose exec graphsense-lib python -c "
+docker compose exec graphsense-lib python -c "
 from graphsenselib.db import DbFactory
 with DbFactory().from_config('prod', 'avian') as db:
     result = db.transformed.get_address_transactions('YOUR_ADDRESS')

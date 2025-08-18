@@ -261,7 +261,7 @@ Try the Ubuntu-based alternative:
 
 ```bash
 # Use Ubuntu base instead of Alpine
-docker-compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
+docker compose build graphsense-dashboard --build-arg DOCKERFILE=../docker/graphsense-dashboard-ubuntu.Dockerfile
 ```
 
 ### **Tree-Sitter Still Failing**
