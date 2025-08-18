@@ -6,6 +6,7 @@ default_environment: dev
 environments:
   dev:
     cassandra_nodes: ["cassandra"]
+    protocol_version: 4
     username: null
     password: null
     readonly_username: null
@@ -24,10 +25,16 @@ environments:
         keyspace_setup_config:
           raw:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration: {}
+            data_configuration:
+              block_bucket_size: 10000
+              tx_bucket_size: 10000
+              tx_prefix_length: 4
           transformed:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration: {}
+            data_configuration:
+              block_bucket_size: 10000
+              tx_bucket_size: 10000
+              tx_prefix_length: 4
 
       # Avian configuration
       avian:
@@ -42,10 +49,16 @@ environments:
         keyspace_setup_config:
           raw:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration: {}
+            data_configuration:
+              block_bucket_size: 10000
+              tx_bucket_size: 10000
+              tx_prefix_length: 4
           transformed:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration: {}
+            data_configuration:
+              block_bucket_size: 10000
+              tx_bucket_size: 10000
+              tx_prefix_length: 4
 
 # Global settings
 slack_topics: {}
