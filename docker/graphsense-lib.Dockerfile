@@ -28,6 +28,18 @@ COPY graphsense-lib/src/ /app/src/
 COPY graphsense-lib/pyproject.toml graphsense-lib/uv.lock graphsense-lib/README.md /app/
 COPY graphsense-lib/scripts/ /app/scripts/
 
+# Apply protocol version fix for GraphSense Lib
+# 1. Add protocol_version field to CassandraConfig
+RUN sed -i '/consistency_level: str = Field(/i\    protocol_version: int = Field(\n        default=4, description="Cassandra protocol version"\n    )' /app/src/graphsenselib/config/cassandra_async_config.py \
+    # 2. Update the async Cassandra connection to use the config field
+    && sed -i 's/protocol_version=5,/protocol_version=int(self.config.protocol_version),/' /app/src/graphsenselib/db/asynchronous/cassandra.py \
+    # 3. Fix the synchronous Cassandra connection by uncommenting and setting protocol_version=4
+    && sed -i 's/# protocol_version=6,/protocol_version=4,/' /app/src/graphsenselib/db/cassandra.py \
+    # 4. Verify the changes
+    && grep -n "protocol_version.*Field" /app/src/graphsenselib/config/cassandra_async_config.py || echo "Config field addition failed" \
+    && grep -n "protocol_version.*self.config" /app/src/graphsenselib/db/asynchronous/cassandra.py || echo "Async connection update failed" \
+    && grep -n "protocol_version=4," /app/src/graphsenselib/db/cassandra.py || echo "Sync connection update failed"
+
 # Install dependencies and build (including ingestion dependencies)
 RUN uv sync --frozen --no-dev --extra ingest
 
