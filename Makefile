@@ -69,9 +69,18 @@ start-apps: ## Start only application services (GraphSense)
 	@echo "🚀 Starting application services..."
 	docker compose up -d $(SERVICES_APP)
 
-start-dashboard: ## Start only the dashboard
-	@echo "🚀 Starting GraphSense Dashboard..."
-	docker compose up -d graphsense-dashboard
+start-avian: ## Start only the Avian client
+	@echo "🚀 Starting Avian client..."
+	@echo "🏗️  Building Avian client first..."
+	docker compose build avian-client
+	@echo "🚀 Starting Avian client service..."
+	docker compose up -d avian-client
+	@echo "⏳ Waiting for Avian to start..."
+	@sleep 10
+	@echo "📊 Avian client status:"
+	docker compose ps avian-client
+	@echo "📋 Recent Avian logs:"
+	docker compose logs --tail=20 avian-client
 
 start-with-dashboard: ## Start all services including dashboard
 	@echo "🚀 Starting infrastructure services..."
@@ -274,22 +283,27 @@ wait-for-services: ## Wait for all services to be ready
 		echo "❌ Cassandra failed to become ready"; \
 		exit 1; \
 	fi
-	@echo "🔍 Checking Avian client..."
-	@timeout=300; \
-	while [ $$timeout -gt 0 ]; do \
-		if docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo >/dev/null 2>&1; then \
-			echo "✅ Avian client is ready!"; \
-			break; \
+	@echo "🔍 Checking if Avian client is running..."
+	@if docker compose ps --services --filter "status=running" | grep -q "avian-client"; then \
+		echo "🔍 Avian client is running, checking readiness..."; \
+		timeout=300; \
+		while [ $$timeout -gt 0 ]; do \
+			if docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo >/dev/null 2>&1; then \
+				echo "✅ Avian client is ready!"; \
+				break; \
+			fi; \
+			echo "⏳ Avian client not ready, waiting... ($$timeout seconds remaining)"; \
+			sleep 15; \
+			timeout=$$((timeout-15)); \
+		done; \
+		if [ $$timeout -le 0 ]; then \
+			echo "❌ Avian client failed to become ready"; \
+			exit 1; \
 		fi; \
-		echo "⏳ Avian client not ready, waiting... ($$timeout seconds remaining)"; \
-		sleep 15; \
-		timeout=$$((timeout-15)); \
-	done; \
-	if [ $$timeout -le 0 ]; then \
-		echo "❌ Avian client failed to become ready"; \
-		exit 1; \
+	else \
+		echo "⚠️  Avian client is not running. Use 'make start-avian' to start it."; \
 	fi
-	@echo "✅ All services are ready!"
+	@echo "✅ All running services are ready!"
 
 # Diagnostic Commands
 diagnose: ## Run system diagnostics
@@ -297,17 +311,57 @@ diagnose: ## Run system diagnostics
 	@echo "📊 Service status:"
 	@docker compose ps
 	@echo ""
-	@echo "🌐 Network connectivity tests:"
-	@echo "  Testing Cassandra connection from graphsense-lib:"
-	@docker compose exec graphsense-lib ping -c 2 cassandra || echo "❌ Cannot reach Cassandra"
-	@echo "  Testing Avian connection from graphsense-lib:"
-	@docker compose exec graphsense-lib ping -c 2 avian-client || echo "❌ Cannot reach Avian client"
+	@echo "🔍 Checking which services are missing:"
+	@if [ $$(docker compose ps --services --filter "status=running" | grep -c "avian-client") -eq 0 ]; then \
+		echo "❌ avian-client is not running"; \
+	else \
+		echo "✅ avian-client is running"; \
+	fi
 	@echo ""
-	@echo "🔌 Port checks:"
-	@echo "  Cassandra port 9042:"
-	@docker compose exec graphsense-lib nc -zv cassandra 9042 || echo "❌ Port 9042 not accessible"
-	@echo "  Avian RPC port 7896:"
-	@docker compose exec graphsense-lib nc -zv avian-client 7896 || echo "❌ Port 7896 not accessible"
+	@echo "🌐 Docker network information:"
+	@echo "  Docker networks:"
+	@docker network ls | grep graphsense || echo "❌ GraphSense network not found"
+	@echo "  Network details:"
+	@docker network inspect graphsense-avian-net --format '{{.IPAM.Config}}' 2>/dev/null || echo "❌ Cannot inspect network"
+	@echo ""
+	@echo "🔗 Container network connectivity:"
+	@echo "  Testing Cassandra connection from graphsense-lib:"
+	@docker compose exec graphsense-lib python3 -c "import socket; s=socket.socket(); s.settimeout(5); result=s.connect_ex(('cassandra', 9042)); s.close(); print('✅ Cassandra reachable' if result == 0 else '❌ Cannot reach Cassandra')" 2>/dev/null || echo "❌ Cannot test Cassandra connection"
+	@if docker compose ps --services --filter "status=running" | grep -q "avian-client"; then \
+		echo "  Testing Avian connection from graphsense-lib:"; \
+		docker compose exec graphsense-lib python3 -c "import socket; s=socket.socket(); s.settimeout(5); result=s.connect_ex(('avian-client', 7896)); s.close(); print('✅ Avian client reachable' if result == 0 else '❌ Cannot reach Avian client')" 2>/dev/null || echo "❌ Cannot test Avian connection"; \
+	else \
+		echo "  ⚠️  Avian client is not running - skipping connectivity test"; \
+	fi
+
+diagnose-wsl: ## WSL2-specific network diagnostics
+	@echo "🔍 WSL2 Network Diagnostics..."
+	@echo "📊 WSL Distribution:"
+	@wsl -l -v 2>/dev/null || echo "❌ WSL not available or not in WSL"
+	@echo ""
+	@echo "🐳 Docker version and context:"
+	@docker version --format '{{.Server.Version}}' 2>/dev/null || echo "❌ Docker not available"
+	@docker context show 2>/dev/null || echo "❌ Cannot show Docker context"
+	@echo ""
+	@echo "🌐 Network interfaces in containers:"
+	@echo "  Cassandra container network:"
+	@docker compose exec cassandra ip addr show 2>/dev/null | grep inet || echo "❌ Cannot check Cassandra network"
+	@echo "  GraphSense-lib container network:"
+	@docker compose exec graphsense-lib ip addr show 2>/dev/null | grep inet || echo "❌ Cannot check GraphSense-lib network"
+	@echo ""
+	@echo "🔍 DNS resolution test:"
+	@echo "  From graphsense-lib to cassandra:"
+	@docker compose exec graphsense-lib nslookup cassandra 2>/dev/null || docker compose exec graphsense-lib python3 -c "import socket; print(f'Cassandra resolves to: {socket.gethostbyname(\"cassandra\")}')" 2>/dev/null || echo "❌ DNS resolution failed"
+
+fix-wsl-network: ## Try to fix common WSL2 Docker network issues
+	@echo "🔧 Attempting to fix WSL2 Docker network issues..."
+	@echo "1. Restarting Docker network..."
+	@docker compose down
+	@docker network prune -f
+	@echo "2. Recreating Docker network..."
+	@docker compose up --no-start
+	@echo "3. Starting services..."
+	@docker compose start
 
 # Dashboard Management
 dashboard-help: ## Show dashboard-specific commands
