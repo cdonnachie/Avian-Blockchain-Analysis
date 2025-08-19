@@ -27,18 +27,15 @@ RUN apk --no-cache --update add \
 
 # Set Python path for node-gyp
 ENV PYTHON=/usr/bin/python3
+ENV npm_config_python=/usr/bin/python3
 
 # Copy package files first for better Docker layer caching
 COPY ./package*.json ./
 COPY ./elm-tooling.json ./
 
 # Install npm dependencies with specific flags for native compilation
-RUN npm ci --no-optional --verbose \
-    # Set specific flags for tree-sitter compilation
-    && npm config set target_platform linux \
-    && npm config set target_arch x64 \
-    && npm config set python /usr/bin/python3 \
-    # Rebuild tree-sitter specifically if needed
+RUN npm ci --verbose \
+    # Rebuild tree-sitter specifically
     && npm rebuild @elm-tooling/tree-sitter-elm --verbose
 
 # Copy remaining build files
@@ -75,9 +72,5 @@ RUN rm -f /etc/nginx/http.d/default.conf \
 # Copy built application from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy entrypoint script
-COPY ./docker/docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
-
 EXPOSE 80
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
