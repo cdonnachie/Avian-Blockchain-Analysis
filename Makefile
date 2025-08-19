@@ -351,7 +351,7 @@ diagnose-wsl: ## WSL2-specific network diagnostics
 	@echo ""
 	@echo "🔍 DNS resolution test:"
 	@echo "  From graphsense-lib to cassandra:"
-	@docker compose exec graphsense-lib nslookup cassandra 2>/dev/null || docker compose exec graphsense-lib python3 -c "import socket; print(f'Cassandra resolves to: {socket.gethostbyname(\"cassandra\")}')" 2>/dev/null || echo "❌ DNS resolution failed"
+	@docker compose exec graphsense-lib python3 -c "import socket; print(f'Cassandra resolves to: {socket.gethostbyname(\"cassandra\")}')" 2>/dev/null || echo "❌ DNS resolution failed"
 
 fix-wsl-network: ## Try to fix common WSL2 Docker network issues
 	@echo "🔧 Attempting to fix WSL2 Docker network issues..."
