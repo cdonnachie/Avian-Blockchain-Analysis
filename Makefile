@@ -318,6 +318,12 @@ diagnose: ## Run system diagnostics
 		echo "✅ avian-client is running"; \
 	fi
 	@echo ""
+	@echo "🔍 Spark master health check debug:"
+	@echo "  Testing if curl is available in spark-master:"
+	@docker compose exec spark-master which curl 2>/dev/null && echo "✅ curl available" || echo "❌ curl not available - this is why health check fails"
+	@echo "  Testing Spark Web UI manually:"
+	@docker compose exec spark-master nc -z localhost 8080 2>/dev/null && echo "✅ Port 8080 is open" || echo "❌ Port 8080 not accessible"
+	@echo ""
 	@echo "🌐 Docker network information:"
 	@echo "  Docker networks:"
 	@docker network ls | grep graphsense || echo "❌ GraphSense network not found"
@@ -353,15 +359,15 @@ diagnose-wsl: ## WSL2-specific network diagnostics
 	@echo "  From graphsense-lib to cassandra:"
 	@docker compose exec graphsense-lib python3 -c "import socket; print(f'Cassandra resolves to: {socket.gethostbyname(\"cassandra\")}')" 2>/dev/null || echo "❌ DNS resolution failed"
 
-fix-wsl-network: ## Try to fix common WSL2 Docker network issues
-	@echo "🔧 Attempting to fix WSL2 Docker network issues..."
-	@echo "1. Restarting Docker network..."
-	@docker compose down
-	@docker network prune -f
-	@echo "2. Recreating Docker network..."
-	@docker compose up --no-start
-	@echo "3. Starting services..."
-	@docker compose start
+fix-spark-health: ## Fix Spark master health check issue
+	@echo "🔧 Fixing Spark master health check..."
+	@echo "ℹ️  The issue is that bitnami/spark doesn't include curl for health checks"
+	@echo "🔄 Restarting Spark master with improved health check..."
+	@docker compose stop spark-master
+	@docker compose up -d spark-master
+	@echo "⏳ Waiting for Spark master to become healthy..."
+	@sleep 30
+	@docker compose ps spark-master
 
 # Dashboard Management
 dashboard-help: ## Show dashboard-specific commands
