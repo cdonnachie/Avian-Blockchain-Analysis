@@ -61,7 +61,11 @@ services:
     networks:
       - graphsense-net
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'org.apache.spark.deploy.master.Master' || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "pgrep -f 'org.apache.spark.deploy.master.Master' || exit 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -185,7 +189,7 @@ services:
   avian-client:
     build:
       context: ./avian-client
-      dockerfile: Dockerfile
+      dockerfile: ./Dockerfile
     container_name: avian-client
     hostname: avian-client
     ports:

@@ -48,9 +48,10 @@ fi
 # Update docker-compose.yml if needed
 echo "🔧 Checking docker-compose.yml configuration..."
 
-if grep -q "dockerfile: Dockerfile" docker-compose.yml; then
+# Only update the graphsense-dashboard service, not all services
+if grep -A 5 "graphsense-dashboard:" docker-compose.yml | grep -q "dockerfile: Dockerfile"; then
     echo "🔄 Updating docker-compose.yml to use custom Dockerfiles..."
-    sed -i 's|dockerfile: Dockerfile|dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile|g' docker-compose.yml
+    sed -i '/graphsense-dashboard:/,/dockerfile: Dockerfile/s|dockerfile: Dockerfile|dockerfile: ../docker/graphsense-dashboard-alpine.Dockerfile|' docker-compose.yml
     echo "✅ Dashboard docker-compose.yml updated"
 else
     echo "✅ Dashboard docker-compose.yml already configured"

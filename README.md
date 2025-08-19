@@ -32,6 +32,9 @@ cd Avian-Blockchain-Analysis
 # Initialize submodules
 git submodule update --init --recursive
 
+# Make scripts executable (may be needed after cloning)
+chmod +x setup-dashboard-fix.sh verify-installation.sh
+
 # Apply dashboard tree-sitter fix (automated)
 ./setup-dashboard-fix.sh
 ```
