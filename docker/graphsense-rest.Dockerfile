@@ -61,5 +61,5 @@ ENV GIT_PYTHON_REFRESH=quiet
 # Expose port
 EXPOSE 9000
 
-# Start the application
-CMD ["python", "-m", "gsrest.service"]
+# Start the application using the correct entry point
+CMD ["python", "-m", "aiohttp.web", "-H", "0.0.0.0", "-P", "9000", "gsrest:main"]

@@ -33,6 +33,9 @@ environments:
     password: null
     readonly_username: null
     readonly_password: null
+    logging:
+      level: DEBUG
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     keyspaces:
       # BTC configuration (mapped to Avian)
       btc:
@@ -47,16 +50,10 @@ environments:
         keyspace_setup_config:
           raw:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration:
-              block_bucket_size: 10000
-              tx_bucket_size: 10000
-              tx_prefix_length: 4
+            data_configuration: {}
           transformed:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration:
-              block_bucket_size: 10000
-              tx_bucket_size: 10000
-              tx_prefix_length: 4
+            data_configuration: {}
 
       # Avian configuration
       avian:
@@ -71,23 +68,10 @@ environments:
         keyspace_setup_config:
           raw:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration:
-              block_bucket_size: 10000
-              tx_bucket_size: 10000
-              tx_prefix_length: 4
+            data_configuration: {}
           transformed:
             replication_config: "{'class': 'SimpleStrategy', 'replication_factor': 1}"
-            data_configuration:
-              block_bucket_size: 10000
-              tx_bucket_size: 10000
-              tx_prefix_length: 4
-
-# Global settings
-slack_topics: {}
-cache_directory: "~/.graphsense/cache"
-coingecko_api_key: ""
-coinmarketcap_api_key: ""
-s3_credentials: null
+            data_configuration: {}
 EOF
 
 echo "✅ Configuration created successfully"
