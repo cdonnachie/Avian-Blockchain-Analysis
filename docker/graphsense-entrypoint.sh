@@ -1,5 +1,23 @@
+#!/bin/bash
+# GraphSense Lib Configuration Script
+# This script creates the config file with environment variables
+
+set -e
+
+echo "🔧 Configuring GraphSense with environment variables..."
+
+# Default values
+AVIAN_RPC_HOST=${AVIAN_RPC_HOST:-"host.docker.internal"}
+AVIAN_RPC_PORT=${AVIAN_RPC_PORT:-"7896"}
+AVIAN_RPC_USER=${AVIAN_RPC_USER:-"graphsense"}
+AVIAN_RPC_PASSWORD=${AVIAN_RPC_PASSWORD:-"secure_password"}
+
+echo "📡 Using Avian node: ${AVIAN_RPC_USER}@${AVIAN_RPC_HOST}:${AVIAN_RPC_PORT}"
+
+# Create config file with environment variables
+cat > /app/config/config.yaml << EOF
 # GraphSense configuration for Avian blockchain
-# Following the standard GraphSense schema format
+# Auto-generated with environment variables
 
 default_environment: dev
 
@@ -12,14 +30,14 @@ environments:
     readonly_username: null
     readonly_password: null
     keyspaces:
-      # Existing BTC configuration (placeholder)
+      # BTC configuration (mapped to Avian)
       btc:
         raw_keyspace_name: "btc_raw_dev"
         transformed_keyspace_name: "btc_transformed_dev"
         schema_type: "utxo"
         disable_delta_updates: false
         ingest_config:
-          node_reference: "http://your_rpc_user:your_rpc_password@your_avian_host:7896"
+          node_reference: "http://${AVIAN_RPC_USER}:${AVIAN_RPC_PASSWORD}@${AVIAN_RPC_HOST}:${AVIAN_RPC_PORT}"
           secondary_node_references: []
           raw_keyspace_file_sinks: {}
         keyspace_setup_config:
@@ -43,7 +61,7 @@ environments:
         schema_type: "utxo"
         disable_delta_updates: false
         ingest_config:
-          node_reference: "http://your_rpc_user:your_rpc_password@your_avian_host:7896"
+          node_reference: "http://${AVIAN_RPC_USER}:${AVIAN_RPC_PASSWORD}@${AVIAN_RPC_HOST}:${AVIAN_RPC_PORT}"
           secondary_node_references: []
           raw_keyspace_file_sinks: {}
         keyspace_setup_config:
@@ -66,3 +84,9 @@ cache_directory: "~/.graphsense/cache"
 coingecko_api_key: ""
 coinmarketcap_api_key: ""
 s3_credentials: null
+EOF
+
+echo "✅ Configuration created successfully"
+
+# Execute the original command
+exec "$@"

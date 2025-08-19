@@ -44,6 +44,10 @@ RUN adduser --system --uid 10000 --group dockeruser
 # Copy built application
 COPY --from=builder --chown=dockeruser:dockeruser /app /app
 
+# Copy entrypoint script
+COPY --chown=root:root docker/graphsense-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/graphsense-entrypoint.sh
+
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PATH="/app/.venv/bin:$PATH"
@@ -57,6 +61,9 @@ RUN mkdir -p /app/config
 
 # Expose volume for configuration
 VOLUME ["/app/config", "/app/data"]
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/graphsense-entrypoint.sh"]
 
 # Default command
 CMD ["python", "-m", "graphsenselib.cli", "--help"]
