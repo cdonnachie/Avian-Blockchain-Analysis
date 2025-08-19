@@ -14,6 +14,10 @@ AVIAN_RPC_PASSWORD=${AVIAN_RPC_PASSWORD:-"secure_password"}
 
 echo "📡 Using Avian node: ${AVIAN_RPC_USER}@${AVIAN_RPC_HOST}:${AVIAN_RPC_PORT}"
 
+# Ensure config directory exists and is writable
+mkdir -p /app/config
+chmod 755 /app/config
+
 # Create config file with environment variables
 cat > /app/config/config.yaml << EOF
 # GraphSense configuration for Avian blockchain
@@ -88,5 +92,6 @@ EOF
 
 echo "✅ Configuration created successfully"
 
-# Execute the original command
-exec "$@"
+# Set proper ownership and switch to dockeruser
+chown -R dockeruser:dockeruser /app/config
+exec gosu dockeruser "$@"

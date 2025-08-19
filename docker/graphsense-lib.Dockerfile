@@ -36,6 +36,7 @@ FROM python:3.10-slim
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -53,7 +54,6 @@ ENV PYTHONPATH=/app
 ENV PATH="/app/.venv/bin:$PATH"
 ENV GRAPHSENSE_CONFIG_FILE=/app/config/config.yaml
 
-USER dockeruser
 WORKDIR /app
 
 # Create config directory
