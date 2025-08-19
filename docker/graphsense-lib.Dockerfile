@@ -24,9 +24,9 @@ ENV SETUPTOOLS_SCM_PRETEND_VERSION=1.0.0
 
 # Copy source code
 WORKDIR /app
-COPY src/ /app/src/
-COPY pyproject.toml uv.lock README.md /app/
-COPY scripts/ /app/scripts/
+COPY graphsense-lib/src/ /app/src/
+COPY graphsense-lib/pyproject.toml graphsense-lib/uv.lock graphsense-lib/README.md /app/
+COPY graphsense-lib/scripts/ /app/scripts/
 
 # Install dependencies and build (including ingestion dependencies)
 RUN uv sync --frozen --no-dev --extra ingest

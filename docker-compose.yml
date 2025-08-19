@@ -85,8 +85,8 @@ services:
 
   graphsense-lib:
     build:
-      context: ./graphsense-lib
-      dockerfile: ../docker/graphsense-lib.Dockerfile
+      context: .
+      dockerfile: docker/graphsense-lib.Dockerfile
     container_name: graphsense-lib-avian
     hostname: graphsense-lib
     environment:
