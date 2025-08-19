@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 as builder
+FROM ubuntu:20.04 as builder
 LABEL org.opencontainers.image.title="avian-client"
 LABEL org.opencontainers.image.maintainer="GraphSense Team"
 LABEL org.opencontainers.image.description="Dockerized Avian blockchain client"
@@ -21,7 +21,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     unzip avian-${AVIAN_VERSION}-linux.zip && \
     install -m 0755 -o root -g root -t /usr/local/bin avian-cli aviand avian-qt
 
-FROM ubuntu:24.04
+FROM ubuntu:20.04
 
 ARG UID=10000
 
