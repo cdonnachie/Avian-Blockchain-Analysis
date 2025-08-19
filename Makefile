@@ -97,12 +97,32 @@ restart: ## Restart all services
 init-db: ## Initialize database schemas for Avian
 	@echo "🗄️  Initializing database for Avian..."
 	@echo "⏳ Waiting for services to be ready..."
-	@sleep 10
+	@echo "🔍 Checking Cassandra health..."
+	@timeout=300; \
+	while [ $$timeout -gt 0 ]; do \
+		if docker compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" >/dev/null 2>&1; then \
+			echo "✅ Cassandra is ready!"; \
+			break; \
+		fi; \
+		echo "⏳ Cassandra not ready yet, waiting... ($$timeout seconds remaining)"; \
+		sleep 10; \
+		timeout=$$((timeout-10)); \
+	done; \
+	if [ $$timeout -le 0 ]; then \
+		echo "❌ Cassandra failed to become ready within 5 minutes"; \
+		exit 1; \
+	fi
+	@echo "🗄️  Creating database schemas..."
 	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml schema create -e dev -c btc
 	@echo "✅ Database schemas created."
 
 test-connection: ## Test GraphSense system status
 	@echo "🔍 Testing GraphSense system status..."
+	@echo "⏳ Ensuring services are ready..."
+	@if ! docker compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" >/dev/null 2>&1; then \
+		echo "❌ Cassandra is not ready. Please run 'make start' first."; \
+		exit 1; \
+	fi
 	docker compose exec graphsense-lib graphsense-cli --config-file /app/config/config.yaml monitoring get-summary -e dev -c btc
 
 # Data Ingestion
@@ -210,9 +230,9 @@ dev-setup: setup build-all init-db ## Complete development setup
 
 # Quick commands
 quick-start: ## Quick start (build + start + init-db)
-	$(MAKE) build
+	$(MAKE) build-all
 	$(MAKE) start
-	@sleep 30
+	$(MAKE) wait-for-services
 	$(MAKE) init-db
 
 # Access URLs
@@ -236,6 +256,58 @@ avian-cli: ## Interactive Avian CLI (usage: make avian-cli ARGS="getblockcount")
 avian-sync-status: ## Check Avian sync status
 	@echo "🔄 Avian synchronization status:"
 	@docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo | grep -E "(blocks|headers|verificationprogress)"
+
+wait-for-services: ## Wait for all services to be ready
+	@echo "⏳ Waiting for all services to be ready..."
+	@echo "🔍 Checking Cassandra..."
+	@timeout=300; \
+	while [ $$timeout -gt 0 ]; do \
+		if docker compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" >/dev/null 2>&1; then \
+			echo "✅ Cassandra is ready!"; \
+			break; \
+		fi; \
+		echo "⏳ Cassandra not ready, waiting... ($$timeout seconds remaining)"; \
+		sleep 10; \
+		timeout=$$((timeout-10)); \
+	done; \
+	if [ $$timeout -le 0 ]; then \
+		echo "❌ Cassandra failed to become ready"; \
+		exit 1; \
+	fi
+	@echo "🔍 Checking Avian client..."
+	@timeout=300; \
+	while [ $$timeout -gt 0 ]; do \
+		if docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo >/dev/null 2>&1; then \
+			echo "✅ Avian client is ready!"; \
+			break; \
+		fi; \
+		echo "⏳ Avian client not ready, waiting... ($$timeout seconds remaining)"; \
+		sleep 15; \
+		timeout=$$((timeout-15)); \
+	done; \
+	if [ $$timeout -le 0 ]; then \
+		echo "❌ Avian client failed to become ready"; \
+		exit 1; \
+	fi
+	@echo "✅ All services are ready!"
+
+# Diagnostic Commands
+diagnose: ## Run system diagnostics
+	@echo "🔍 Running system diagnostics..."
+	@echo "📊 Service status:"
+	@docker compose ps
+	@echo ""
+	@echo "🌐 Network connectivity tests:"
+	@echo "  Testing Cassandra connection from graphsense-lib:"
+	@docker compose exec graphsense-lib ping -c 2 cassandra || echo "❌ Cannot reach Cassandra"
+	@echo "  Testing Avian connection from graphsense-lib:"
+	@docker compose exec graphsense-lib ping -c 2 avian-client || echo "❌ Cannot reach Avian client"
+	@echo ""
+	@echo "🔌 Port checks:"
+	@echo "  Cassandra port 9042:"
+	@docker compose exec graphsense-lib nc -zv cassandra 9042 || echo "❌ Port 9042 not accessible"
+	@echo "  Avian RPC port 7896:"
+	@docker compose exec graphsense-lib nc -zv avian-client 7896 || echo "❌ Port 7896 not accessible"
 
 # Dashboard Management
 dashboard-help: ## Show dashboard-specific commands
