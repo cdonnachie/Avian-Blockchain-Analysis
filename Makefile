@@ -30,6 +30,10 @@ build: ## Build core Docker images (including lib and rest)
 	@echo "🏗️  Building Docker images for core services..."
 	docker compose build $(SERVICES_APP)
 
+build-infra: ## Build infrastructure Docker images
+	@echo "🏗️  Building Docker images for infrastructure services..."
+	docker compose build avian-client
+
 build-dashboard: ## Build GraphSense Dashboard with tree-sitter fix (Alpine)
 	@echo "🏗️  Building GraphSense Dashboard with Alpine-based tree-sitter fix..."
 	docker compose build graphsense-dashboard
@@ -42,7 +46,11 @@ build-lib: ## Build GraphSense Lib with custom Dockerfile
 	@echo "🏗️  Building GraphSense Lib..."
 	docker compose build graphsense-lib
 
-build-all: build build-lib build-dashboard ## Build all services including dashboard
+build-avian: ## Build Avian client Docker image
+	@echo "🏗️  Building Avian client..."
+	docker compose build avian-client
+
+build-all: build build-lib build-avian build-dashboard ## Build all services including dashboard
 
 # Service Management
 start: ## Start all services
@@ -192,7 +200,7 @@ backup: ## Create Cassandra data backup
 	@echo "✅ Backup created in Cassandra snapshots."
 
 # Development
-dev-setup: setup build init-db ## Complete development setup
+dev-setup: setup build-all init-db ## Complete development setup
 	@echo "🎯 Development setup completed."
 	@echo "📋 Next steps:"
 	@echo "   1. Edit .env with your Avian node configuration"
