@@ -115,7 +115,7 @@ services:
   graphsense-rest:
     build:
       context: ./graphsense-REST
-      dockerfile: Dockerfile
+      dockerfile: ../docker/graphsense-rest.Dockerfile
     container_name: graphsense-rest-avian
     hostname: graphsense-rest
     environment:
