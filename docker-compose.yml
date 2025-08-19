@@ -60,6 +60,12 @@ services:
       - spark_data:/opt/bitnami/spark/data
     networks:
       - graphsense-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
 
   spark-worker-1:
@@ -72,7 +78,8 @@ services:
       - SPARK_WORKER_MEMORY=2G
       - SPARK_WORKER_CORES=2
     depends_on:
-      - spark-master
+      spark-master:
+        condition: service_healthy
     volumes:
       - spark_data:/opt/bitnami/spark/data
     networks:
@@ -91,7 +98,7 @@ services:
     hostname: graphsense-lib
     environment:
       - GRAPHSENSE_CONFIG_FILE=/app/config/config.yaml
-      - AVIAN_RPC_HOST=${AVIAN_RPC_HOST:-localhost}
+      - AVIAN_RPC_HOST=${AVIAN_RPC_HOST:-avian-client}
       - AVIAN_RPC_PORT=${AVIAN_RPC_PORT:-7896}
       - AVIAN_RPC_USER=${AVIAN_RPC_USER:-graphsense}
       - AVIAN_RPC_PASSWORD=${AVIAN_RPC_PASSWORD:-secure_password}
@@ -105,6 +112,8 @@ services:
         condition: service_healthy
       spark-master:
         condition: service_started
+      avian-client:
+        condition: service_healthy
     networks:
       - graphsense-net
     extra_hosts:
@@ -172,21 +181,36 @@ services:
   # OPTIONAL SERVICES
   # ================================
 
-  # Avian Client (Reference - External node preferred)
-  # avian-client:
-  #   build:
-  #     context: ./avian-client
-  #     dockerfile: Dockerfile
-  #   container_name: avian-client
-  #   hostname: avian-client
-  #   ports:
-  #     - "7896:7896"
-  #   volumes:
-  #     - avian_data:/opt/avian/data
-  #     - ./config/avian/avian.conf:/opt/avian/avian.conf:ro
-  #   networks:
-  #     - graphsense-net
-  #   restart: unless-stopped
+  # Avian Client (Blockchain Node)
+  avian-client:
+    build:
+      context: ./avian-client
+      dockerfile: Dockerfile
+    container_name: avian-client
+    hostname: avian-client
+    ports:
+      - "7895:7895" # P2P port
+      - "7896:7896" # RPC port
+      - "28332:28332" # ZMQ rawblock
+      - "28333:28333" # ZMQ rawtx
+      - "28334:28334" # ZMQ hashtx
+      - "28335:28335" # ZMQ hashblock
+    volumes:
+      - avian_data:/opt/avian/data
+      - ./config/avian/avian.conf:/opt/avian/avian.conf:ro
+    networks:
+      - graphsense-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
 
   # Monitoring (Optional)
   prometheus:

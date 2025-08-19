@@ -6,7 +6,7 @@
 # Variables
 COMPOSE_FILE=docker-compose.yml
 SERVICES_CORE=cassandra spark-master spark-worker-1 graphsense-lib graphsense-rest
-SERVICES_INFRA=cassandra spark-master spark-worker-1
+SERVICES_INFRA=cassandra spark-master spark-worker-1 avian-client
 SERVICES_APP=graphsense-lib graphsense-rest
 SERVICES_ALL=$(SERVICES_APP) graphsense-dashboard
 
@@ -126,6 +126,18 @@ logs-dashboard: ## View logs of graphsense-dashboard
 logs-cassandra: ## View logs of Cassandra
 	docker compose logs -f cassandra
 
+logs-spark: ## View logs of Spark services
+	docker compose logs -f spark-master spark-worker-1
+
+logs-spark-master: ## View logs of Spark master
+	docker compose logs -f spark-master
+
+logs-spark-worker: ## View logs of Spark worker
+	docker compose logs -f spark-worker-1
+
+logs-avian: ## View logs of Avian client
+	docker compose logs -f avian-client
+
 status: ## Show status of all services
 	@echo "📊 Service status:"
 	docker compose ps
@@ -137,6 +149,8 @@ health: ## Verificar salud de servicios
 	@echo "🏥 Verificando salud de servicios..."
 	@echo "Cassandra:"
 	@docker compose exec cassandra cqlsh -e "SELECT now() FROM system.local;" 2>/dev/null && echo "✅ Cassandra OK" || echo "❌ Cassandra ERROR"
+	@echo "Avian Node:"
+	@docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo 2>/dev/null && echo "✅ Avian Node OK" || echo "❌ Avian Node ERROR"
 	@echo "REST API:"
 	@curl -s http://localhost:9000/health >/dev/null && echo "✅ REST API OK" || echo "❌ REST API ERROR"
 	@echo "Dashboard:"
@@ -199,8 +213,21 @@ urls: ## Show service access URLs
 	@echo "   Dashboard:  http://localhost:8081"
 	@echo "   REST API:   http://localhost:9000"
 	@echo "   Spark UI:   http://localhost:8080"
+	@echo "   Avian RPC:  http://localhost:7896"
 	@echo "   Prometheus: http://localhost:9090 (if enabled)"
 	@echo "   Grafana:    http://localhost:3000 (if enabled)"
+
+# Avian Management
+avian-info: ## Get Avian blockchain info
+	@echo "📊 Avian blockchain information:"
+	docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo
+
+avian-cli: ## Interactive Avian CLI (usage: make avian-cli ARGS="getblockcount")
+	docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data $(ARGS)
+
+avian-sync-status: ## Check Avian sync status
+	@echo "🔄 Avian synchronization status:"
+	@docker compose exec avian-client avian-cli -conf=/opt/avian/avian.conf -datadir=/opt/avian/data getblockchaininfo | grep -E "(blocks|headers|verificationprogress)"
 
 # Dashboard Management
 dashboard-help: ## Show dashboard-specific commands
