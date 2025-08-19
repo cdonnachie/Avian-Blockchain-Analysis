@@ -161,7 +161,7 @@ services:
     environment:
       - REST_URL=http://graphsense-rest:9000
     ports:
-      - "8081:8000"
+      - "8081:80"
     depends_on:
       - graphsense-rest
     networks:
