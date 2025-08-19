@@ -48,13 +48,15 @@ FROM python:3.11-alpine3.20 AS runner
 RUN apk --no-cache --update add \
     bash \
     shadow \
-    postgresql-libs
+    postgresql-libs \
+    git
 
 COPY --from=builder /srv/graphsense-rest /srv/graphsense-rest
 WORKDIR /srv/graphsense-rest
 
 ENV VIRTUAL_ENV=/srv/graphsense-rest/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV GIT_PYTHON_REFRESH=quiet
 
 # Expose port
 EXPOSE 9000
