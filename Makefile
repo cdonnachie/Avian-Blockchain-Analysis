@@ -229,13 +229,12 @@ backup: ## Create Cassandra data backup
 	@echo "✅ Backup created in Cassandra snapshots."
 
 # Development
-dev-setup: setup build-all init-db ## Complete development setup
+dev-setup: setup build-all start wait-for-services init-db ## Complete development setup
 	@echo "🎯 Development setup completed."
 	@echo "📋 Next steps:"
 	@echo "   1. Edit .env with your Avian node configuration"
-	@echo "   2. Run: make start"
-	@echo "   3. Run: make test-connection"
-	@echo "   4. Run: make ingest-batch"
+	@echo "   2. Run: make test-connection"
+	@echo "   3. Run: make ingest-batch"
 
 # Quick commands
 quick-start: ## Quick start (build + start + init-db)
