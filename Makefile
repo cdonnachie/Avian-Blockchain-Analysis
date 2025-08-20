@@ -92,6 +92,10 @@ start-with-dashboard: ## Start all services including dashboard
 	@echo "🎨 Starting dashboard..."
 	docker compose up -d graphsense-dashboard
 
+start-dashboard: ## Start only dashboard service
+	@echo "🎨 Starting GraphSense dashboard..."
+	docker compose up -d graphsense-dashboard
+
 stop: ## Stop all services
 	@echo "🛑 Stopping all services..."
 	docker compose down
